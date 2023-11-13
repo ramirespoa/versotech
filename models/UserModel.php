@@ -65,6 +65,12 @@ class UserModel
         if (!is_numeric($id)) {
             return false;
         }
+
+        $queryDelete = "DELETE FROM user_colors WHERE user_id = :user_id";
+        $stmtDelete = $this->connection->getConnection()->prepare($queryDelete);
+        $stmtDelete->bindParam(':user_id', $id);
+        $stmtDelete->execute();
+
         $query = "DELETE FROM users WHERE id = :id";
         $stmt = $this->connection->getConnection()->prepare($query);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);

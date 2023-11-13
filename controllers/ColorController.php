@@ -30,16 +30,24 @@ class ColorController {
     public function new() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $colorName = isset($_POST['name']) ? $_POST['name'] : null;
-            if ($colorName !== null) {
+            if ($colorName != null) {
                 $success = $this->colorModel->addColor($colorName);
                 if ($success) {
                     header("Location: /colors");
                     exit;
                 } else {
-                    echo "Falha na adição da cor.";
+                    if (isset($_SERVER['HTTP_REFERER'])) {
+                        $refererUrl = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH);
+                        header("Location: {$refererUrl}?erro=" . urlencode('Add new register failed.'));
+                        exit;
+                    }
                 }
             } else {
-                echo "Dados insuficientes para adição.";
+                if (isset($_SERVER['HTTP_REFERER'])) {
+                    $refererUrl = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH);
+                    header("Location: {$refererUrl}?erro=" . urlencode('Missing data to add new register.'));
+                    exit;
+                }
             }
         }
     }
@@ -48,16 +56,24 @@ class ColorController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = isset($_POST['id']) ? $_POST['id'] : null;
             $newColorName = isset($_POST['name']) ? $_POST['name'] : null;
-            if ($id !== null && $newColorName !== null) {
+            if ($id != null && $newColorName != null) {
                 $success = $this->colorModel->updateColor($id, $newColorName);
                 if ($success) {
                     header("Location: /colors");
                     exit;
                 } else {
-                    echo "Falha na atualização.";
+                    if (isset($_SERVER['HTTP_REFERER'])) {
+                        $refererUrl = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH);
+                        header("Location: {$refererUrl}?id=".$id."&erro=" . urlencode('Update failed.'));
+                        exit;
+                    }
                 }
             } else {
-                echo "Dados insuficientes para atualização.";
+                if (isset($_SERVER['HTTP_REFERER'])) {
+                    $refererUrl = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_PATH);
+                    header("Location: {$refererUrl}?id=".$id."&erro=" . urlencode('Missing data to update.'));
+                    exit;
+                }
             }
         }
     }

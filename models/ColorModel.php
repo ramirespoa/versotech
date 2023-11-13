@@ -80,6 +80,12 @@ class ColorModel
         if (!is_numeric($id)) {
             return false;
         }
+
+        $queryDelete = "DELETE FROM user_colors WHERE color_id = :id";
+        $stmtDelete = $this->connection->getConnection()->prepare($queryDelete);
+        $stmtDelete->bindParam(':color_id', $id);
+        $stmtDelete->execute();
+
         $query = "DELETE FROM colors WHERE id = :id";
         $stmt = $this->connection->getConnection()->prepare($query);
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);

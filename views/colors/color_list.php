@@ -75,7 +75,7 @@
             console.warn('delete');
             swal.fire({
                 title: 'Are you sure?',
-                    text: 'This action will remove all user colors associated.',
+                    text: 'This action will affect user colors.',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
