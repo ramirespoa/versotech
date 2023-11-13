@@ -1,0 +1,82 @@
+FROM php:7.4-fpm-alpine
+
+LABEL Maintainer="Pablo Ramires - prova <github.com/ramirespoa>" \
+    Description="PHP-FPM v7.4 on top of Alpine Linux for development environment."
+
+ARG COMPOSER_VERSION
+ARG COMPOSER_SUM
+
+RUN apk add --no-cache \
+      freetype \
+      libjpeg-turbo \
+      libpng \
+      freetype-dev \
+      libjpeg-turbo-dev \
+      libpng-dev \
+    && docker-php-ext-configure gd \
+      --with-freetype=/usr/include/ \
+      # --with-png=/usr/include/ \ # No longer necessary as of 7.4; https://github.com/docker-library/php/pull/910#issuecomment-559383597
+      --with-jpeg=/usr/include/ \
+    && docker-php-ext-install -j$(nproc) gd \
+    && docker-php-ext-enable gd \
+    && apk del --no-cache \
+      freetype-dev \
+      libjpeg-turbo-dev \
+      libpng-dev \
+      libmcrypt-dev \
+      libltdl \
+      nodejs \
+      npm \
+      libpng-dev \
+      gcc \
+      make \
+      musl-dev \
+    && rm -rf /tmp/*
+
+RUN set -eux \
+    && apk add --no-cache --virtual .build-deps \
+    autoconf \
+    curl-dev \
+    freetype-dev \
+    gcc \
+    libc-dev \
+    libjpeg-turbo-dev \
+    libpng-dev \
+    libwebp-dev \
+    libxpm-dev \
+    libzip-dev \
+    postgresql-dev \
+    zlib-dev \
+    && ln -s /usr/lib/x86_64-linux-gnu/libXpm.* /usr/lib/ \
+    && docker-php-ext-configure gd \
+        --enable-gd \
+        --with-webp \
+        --with-jpeg \
+        --with-xpm \
+        --with-freetype \
+        --enable-gd-jis-conv \
+    && docker-php-ext-install -j$(nproc) gd \
+    && true
+
+RUN docker-php-ext-install pcntl pdo_mysql
+
+RUN apk add --no-cache sqlite
+
+RUN set -ex && apk --no-cache add libxml2-dev
+RUN docker-php-ext-install soap
+
+RUN docker-php-ext-install -j$(nproc) pdo_pgsql && true \
+    && docker-php-ext-install -j$(nproc) pgsql && true \
+    && docker-php-ext-configure zip --with-zip \
+    && docker-php-ext-install -j$(nproc) zip \
+    && true
+
+RUN set -eux \
+    && curl -LO "https://getcomposer.org/download/${COMPOSER_VERSION}/composer.phar" \
+    && echo "${COMPOSER_SUM}  composer.phar" | sha256sum -c - \
+    && chmod +x composer.phar \
+    && mv composer.phar /usr/local/bin/composer \
+    && composer --version \
+    && true
+
+CMD ["php-fpm"]
